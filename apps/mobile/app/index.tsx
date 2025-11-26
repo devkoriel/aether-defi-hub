@@ -32,9 +32,11 @@ export default function Home() {
         </StyledTouchableOpacity>
       </Link>
       
-      <StyledTouchableOpacity className="w-full mt-4 py-4 rounded-full items-center border border-white/20 active:bg-white/10">
-        <StyledText className="text-white font-medium text-lg">Connect Wallet</StyledText>
-      </StyledTouchableOpacity>
+      <Link href="/dashboard" asChild>
+        <StyledTouchableOpacity className="w-full mt-4 py-4 rounded-full items-center border border-white/20 active:bg-white/10">
+          <StyledText className="text-white font-medium text-lg">Connect Wallet</StyledText>
+        </StyledTouchableOpacity>
+      </Link>
     </StyledView>
   );
 }
