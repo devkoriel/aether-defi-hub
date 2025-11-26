@@ -1,0 +1,109 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  walletAddress String    @unique
+  createdAt     DateTime  @default(now())
+  lastLogin     DateTime?
+
+  profile       Profile?
+  watchlist     Watchlist[]
+  transactions  Transaction[]
+  settings      UserSettings?
+
+  @@index([walletAddress])
+}
+
+model Profile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName String?
+  avatarUrl   String?
+  bio         String?
+  updatedAt   DateTime @updatedAt
+}
+
+model UserSettings {
+  id              String  @id @default(uuid())
+  userId          String  @unique
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currency        String  @default("USD")
+  theme           String  @default("dark")
+  notifications   Boolean @default(true)
+  biometricsEnabled Boolean @default(false)
+}
+
+model Watchlist {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenSymbol String
+  chainId     Int?     // Optional: specific chain
+  addedAt     DateTime @default(now())
+
+  @@unique([userId, tokenSymbol])
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  txHash      String
+  chainId     Int
+  type        TransactionType
+  status      TransactionStatus @default(PENDING)
+  
+  tokenIn     String
+  amountIn    Decimal
+  tokenOut    String?
+  amountOut   Decimal?
+  
+  fee         Decimal?
+  timestamp   DateTime @default(now())
+
+  @@index([userId])
+  @@index([txHash])
+}
+
+model AIInsight {
+  id          String   @id @default(uuid())
+  tokenSymbol String
+  prediction  PredictionType
+  confidence  Float    // 0.0 to 1.0
+  reasoning   String   @db.Text
+  generatedAt DateTime @default(now())
+  validUntil  DateTime
+
+  @@index([tokenSymbol])
+}
+
+enum TransactionType {
+  SWAP
+  BRIDGE
+  SEND
+  RECEIVE
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum PredictionType {
+  BULLISH
+  BEARISH
+  NEUTRAL
+}
